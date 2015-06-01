@@ -29,7 +29,7 @@ from Cura.gui.util import previewTools
 from Cura.gui.util import openglHelpers
 from Cura.gui.util import openglGui
 from Cura.gui.util import engineResultView
-from Cura.gui.tools import youmagineGui
+# from Cura.gui.tools import youmagineGui
 from Cura.gui.tools import imageToMesh
 
 class SceneView(openglGui.glGuiPanel):
