@@ -104,8 +104,8 @@ class SceneView(openglGui.glGuiPanel):
 
 		self.viewSelection = openglGui.glComboButton(self, _("View mode"), [7,19,11,15,23], [_("Normal"), _("Overhang"), _("Transparent"), _("X-Ray"), _("Layers")], (-1,0), self.OnViewChange)
 
-		self.youMagineButton = openglGui.glButton(self, 26, _("Share on YouMagine"), (2,0), lambda button: youmagineGui.youmagineManager(self.GetTopLevelParent(), self._scene))
-		self.youMagineButton.setDisabled(True)
+		# self.youMagineButton = openglGui.glButton(self, 26, _("Share on YouMagine"), (2,0), lambda button: youmagineGui.youmagineManager(self.GetTopLevelParent(), self._scene))
+		# self.youMagineButton.setDisabled(True)
 
 		self.notification = openglGui.glNotification(self, (0, 0))
 
@@ -134,11 +134,11 @@ class SceneView(openglGui.glGuiPanel):
 		self.printButton.setBottomText('')
 		self.viewSelection.setValue(4)
 		self.printButton.setDisabled(False)
-		self.youMagineButton.setDisabled(True)
+		# self.youMagineButton.setDisabled(True)
 		self.OnViewChange()
 
 	def loadSceneFiles(self, filenames):
-		self.youMagineButton.setDisabled(False)
+		# self.youMagineButton.setDisabled(False)
 		#if self.viewSelection.getValue() == 4:
 		#	self.viewSelection.setValue(0)
 		#	self.OnViewChange()
@@ -247,67 +247,68 @@ class SceneView(openglGui.glGuiPanel):
 			self.loadFiles(filenames)
 
 	def showSaveModel(self):
-		if len(self._scene.objects()) < 1:
-			return
-		dlg=wx.FileDialog(self, _("Save 3D model"), os.path.split(profile.getPreference('lastFile'))[0], style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
-		fileExtensions = meshLoader.saveSupportedExtensions()
-		wildcardList = ';'.join(map(lambda s: '*' + s, fileExtensions))
-		wildcardFilter = "Mesh files (%s)|%s;%s" % (wildcardList, wildcardList, wildcardList.upper())
-		dlg.SetWildcard(wildcardFilter)
-		if dlg.ShowModal() != wx.ID_OK:
-			dlg.Destroy()
-			return
-		filename = dlg.GetPath()
-		dlg.Destroy()
-		meshLoader.saveMeshes(filename, self._scene.objects())
+		pass
+	# 	if len(self._scene.objects()) < 1:
+	# 		return
+	# 	dlg=wx.FileDialog(self, _("Save 3D model"), os.path.split(profile.getPreference('lastFile'))[0], style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+	# 	fileExtensions = meshLoader.saveSupportedExtensions()
+	# 	wildcardList = ';'.join(map(lambda s: '*' + s, fileExtensions))
+	# 	wildcardFilter = "Mesh files (%s)|%s;%s" % (wildcardList, wildcardList, wildcardList.upper())
+	# 	dlg.SetWildcard(wildcardFilter)
+	# 	if dlg.ShowModal() != wx.ID_OK:
+	# 		dlg.Destroy()
+	# 		return
+	# 	filename = dlg.GetPath()
+	# 	dlg.Destroy()
+	# 	meshLoader.saveMeshes(filename, self._scene.objects())
 
 	def OnPrintButton(self, button):
-		if button == 1:
-			connectionGroup = self._printerConnectionManager.getAvailableGroup()
-			if len(removableStorage.getPossibleSDcardDrives()) > 0 and (connectionGroup is None or connectionGroup.getPriority() < 0):
-				drives = removableStorage.getPossibleSDcardDrives()
-				if len(drives) > 1:
-					dlg = wx.SingleChoiceDialog(self, "Select SD drive", "Multiple removable drives have been found,\nplease select your SD card drive", map(lambda n: n[0], drives))
-					if dlg.ShowModal() != wx.ID_OK:
-						dlg.Destroy()
-						return
-					drive = drives[dlg.GetSelection()]
-					dlg.Destroy()
-				else:
-					drive = drives[0]
-				filename = self._scene._objectList[0].getName() + profile.getGCodeExtension()
-				
-				#check if the file is part of the root folder. If so, create folders on sd card to get the same folder hierarchy.
-				repDir = profile.getPreference("sdcard_rootfolder")
-				try:
-					if os.path.exists(repDir) and os.path.isdir(repDir):
-						repDir = os.path.abspath(repDir)
-						originFilename = os.path.abspath( self._scene._objectList[0].getOriginFilename() )
-						if os.path.dirname(originFilename).startswith(repDir):
-							new_filename = os.path.splitext(originFilename[len(repDir):])[0] + profile.getGCodeExtension()
-							sdPath = os.path.dirname(os.path.join(drive[1], new_filename))
-							if not os.path.exists(sdPath):
-								print "Creating replication directory:", sdPath
-								os.makedirs(sdPath)
-							filename = new_filename
-				except:
-					pass
+		# if button == 1:
+		# 	connectionGroup = self._printerConnectionManager.getAvailableGroup()
+		# 	if len(removableStorage.getPossibleSDcardDrives()) > 0 and (connectionGroup is None or connectionGroup.getPriority() < 0):
+		# 		drives = removableStorage.getPossibleSDcardDrives()
+		# 		if len(drives) > 1:
+		# 			dlg = wx.SingleChoiceDialog(self, "Select SD drive", "Multiple removable drives have been found,\nplease select your SD card drive", map(lambda n: n[0], drives))
+		# 			if dlg.ShowModal() != wx.ID_OK:
+		# 				dlg.Destroy()
+		# 				return
+		# 			drive = drives[dlg.GetSelection()]
+		# 			dlg.Destroy()
+		# 		else:
+		# 			drive = drives[0]
+		# 		filename = self._scene._objectList[0].getName() + profile.getGCodeExtension()
 
-				threading.Thread(target=self._saveGCode,args=(drive[1] + filename, drive[1])).start()
-			elif connectionGroup is not None:
-				connections = connectionGroup.getAvailableConnections()
-				if len(connections) < 2:
-					connection = connections[0]
-				else:
-					dlg = wx.SingleChoiceDialog(self, "Select the %s connection to use" % (connectionGroup.getName()), "Multiple %s connections found" % (connectionGroup.getName()), map(lambda n: n.getName(), connections))
-					if dlg.ShowModal() != wx.ID_OK:
-						dlg.Destroy()
-						return
-					connection = connections[dlg.GetSelection()]
-					dlg.Destroy()
-				self._openPrintWindowForConnection(connection)
-			else:
-				self.showSaveGCode()
+		# 		#check if the file is part of the root folder. If so, create folders on sd card to get the same folder hierarchy.
+		# 		repDir = profile.getPreference("sdcard_rootfolder")
+		# 		try:
+		# 			if os.path.exists(repDir) and os.path.isdir(repDir):
+		# 				repDir = os.path.abspath(repDir)
+		# 				originFilename = os.path.abspath( self._scene._objectList[0].getOriginFilename() )
+		# 				if os.path.dirname(originFilename).startswith(repDir):
+		# 					new_filename = os.path.splitext(originFilename[len(repDir):])[0] + profile.getGCodeExtension()
+		# 					sdPath = os.path.dirname(os.path.join(drive[1], new_filename))
+		# 					if not os.path.exists(sdPath):
+		# 						print "Creating replication directory:", sdPath
+		# 						os.makedirs(sdPath)
+		# 					filename = new_filename
+		# 		except:
+		# 			pass
+
+		# 		threading.Thread(target=self._saveGCode,args=(drive[1] + filename, drive[1])).start()
+		# 	elif connectionGroup is not None:
+		# 		connections = connectionGroup.getAvailableConnections()
+		# 		if len(connections) < 2:
+		# 			connection = connections[0]
+		# 		else:
+		# 			dlg = wx.SingleChoiceDialog(self, "Select the %s connection to use" % (connectionGroup.getName()), "Multiple %s connections found" % (connectionGroup.getName()), map(lambda n: n.getName(), connections))
+		# 			if dlg.ShowModal() != wx.ID_OK:
+		# 				dlg.Destroy()
+		# 				return
+		# 			connection = connections[dlg.GetSelection()]
+		# 			dlg.Destroy()
+		# 		self._openPrintWindowForConnection(connection)
+			# else:
+				# self.showSaveGCode()
 		if button == 3:
 			menu = wx.Menu()
 			connections = self._printerConnectionManager.getAvailableConnections()
@@ -316,8 +317,8 @@ class SceneView(openglGui.glGuiPanel):
 				i = menu.Append(-1, _("Print with %s") % (connection.getName()))
 				menu.connectionMap[i.GetId()] = connection
 				self.Bind(wx.EVT_MENU, lambda e: self._openPrintWindowForConnection(e.GetEventObject().connectionMap[e.GetId()]), i)
-			self.Bind(wx.EVT_MENU, lambda e: self.showSaveGCode(), menu.Append(-1, _("Save GCode...")))
-			self.Bind(wx.EVT_MENU, lambda e: self._showEngineLog(), menu.Append(-1, _("Slice engine log...")))
+			# self.Bind(wx.EVT_MENU, lambda e: self.showSaveGCode(), menu.Append(-1, _("Save GCode...")))
+			# self.Bind(wx.EVT_MENU, lambda e: self._showEngineLog(), menu.Append(-1, _("Slice engine log...")))
 			self.PopupMenu(menu)
 			menu.Destroy()
 
@@ -340,49 +341,50 @@ class SceneView(openglGui.glGuiPanel):
 				self.notification.message("Failed to start print...")
 
 	def showSaveGCode(self):
-		if len(self._scene._objectList) < 1:
-			return
-		if not self._engine.getResult().isFinished():
-			return
-		dlg=wx.FileDialog(self, _("Save toolpath"), os.path.dirname(profile.getPreference('lastFile')), style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
-		filename = self._scene._objectList[0].getName() + profile.getGCodeExtension()
-		dlg.SetFilename(filename)
-		dlg.SetWildcard('Toolpath (*%s)|*%s;*%s' % (profile.getGCodeExtension(), profile.getGCodeExtension(), profile.getGCodeExtension()[0:2]))
-		if dlg.ShowModal() != wx.ID_OK:
-			dlg.Destroy()
-			return
-		filename = dlg.GetPath()
-		dlg.Destroy()
+		pass
+		# if len(self._scene._objectList) < 1:
+		# 	return
+		# if not self._engine.getResult().isFinished():
+		# 	return
+		# dlg=wx.FileDialog(self, _("Save toolpath"), os.path.dirname(profile.getPreference('lastFile')), style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+		# filename = self._scene._objectList[0].getName() + profile.getGCodeExtension()
+		# dlg.SetFilename(filename)
+		# dlg.SetWildcard('Toolpath (*%s)|*%s;*%s' % (profile.getGCodeExtension(), profile.getGCodeExtension(), profile.getGCodeExtension()[0:2]))
+		# if dlg.ShowModal() != wx.ID_OK:
+		# 	dlg.Destroy()
+		# 	return
+		# filename = dlg.GetPath()
+		# dlg.Destroy()
 
-		threading.Thread(target=self._saveGCode,args=(filename,)).start()
+		# threading.Thread(target=self._saveGCode,args=(filename,)).start()
 
-	def _saveGCode(self, targetFilename, ejectDrive = False):
-		gcode = self._engine.getResult().getGCode()
-		try:
-			size = float(len(gcode))
-			read_pos = 0
-			with open(targetFilename, 'wb') as fdst:
-				while 1:
-					buf = gcode.read(16*1024)
-					if len(buf) < 1:
-						break
-					read_pos += len(buf)
-					fdst.write(buf)
-					self.printButton.setProgressBar(read_pos / size)
-					self._queueRefresh()
-		except:
-			import sys, traceback
-			traceback.print_exc()
-			self.notification.message("Failed to save")
-		else:
-			if ejectDrive:
-				self.notification.message("Saved as %s" % (targetFilename), lambda : self._doEjectSD(ejectDrive), 31, 'Eject')
-			elif explorer.hasExplorer():
-				self.notification.message("Saved as %s" % (targetFilename), lambda : explorer.openExplorer(targetFilename), 4, 'Open folder')
-			else:
-				self.notification.message("Saved as %s" % (targetFilename))
-		self.printButton.setProgressBar(None)
-		self._engine.getResult().submitInfoOnline()
+	# def _saveGCode(self, targetFilename, ejectDrive = False):
+		# gcode = self._engine.getResult().getGCode()
+		# try:
+		# 	size = float(len(gcode))
+		# 	read_pos = 0
+		# 	with open(targetFilename, 'wb') as fdst:
+		# 		while 1:
+		# 			buf = gcode.read(16*1024)
+		# 			if len(buf) < 1:
+		# 				break
+		# 			read_pos += len(buf)
+		# 			fdst.write(buf)
+		# 			self.printButton.setProgressBar(read_pos / size)
+		# 			self._queueRefresh()
+		# except:
+		# 	import sys, traceback
+		# 	traceback.print_exc()
+		# 	self.notification.message("Failed to save")
+		# else:
+		# 	if ejectDrive:
+		# 		self.notification.message("Saved as %s" % (targetFilename), lambda : self._doEjectSD(ejectDrive), 31, 'Eject')
+		# 	elif explorer.hasExplorer():
+		# 		self.notification.message("Saved as %s" % (targetFilename), lambda : explorer.openExplorer(targetFilename), 4, 'Open folder')
+		# 	else:
+		# 		self.notification.message("Saved as %s" % (targetFilename))
+		# self.printButton.setProgressBar(None)
+		# self._engine.getResult().submitInfoOnline()
 
 	def _doEjectSD(self, drive):
 		if removableStorage.ejectDrive(drive):
@@ -390,10 +392,10 @@ class SceneView(openglGui.glGuiPanel):
 		else:
 			self.notification.message('Safe remove failed...')
 
-	def _showEngineLog(self):
-		dlg = wx.TextEntryDialog(self, _("The slicing engine reported the following"), _("Engine log..."), '\n'.join(self._engine.getResult().getLog()), wx.TE_MULTILINE | wx.OK | wx.CENTRE)
-		dlg.ShowModal()
-		dlg.Destroy()
+	# def _showEngineLog(self):
+	# 	dlg = wx.TextEntryDialog(self, _("The slicing engine reported the following"), _("Engine log..."), '\n'.join(self._engine.getResult().getLog()), wx.TE_MULTILINE | wx.OK | wx.CENTRE)
+	# 	dlg.ShowModal()
+	# 	dlg.Destroy()
 
 	def OnToolSelect(self, button):
 		if self.rotateToolButton.getSelected():
@@ -995,15 +997,15 @@ class SceneView(openglGui.glGuiPanel):
 
 	def OnPaint(self,e):
 		connectionGroup = self._printerConnectionManager.getAvailableGroup()
-		if len(removableStorage.getPossibleSDcardDrives()) > 0 and (connectionGroup is None or connectionGroup.getPriority() < 0):
-			self.printButton._imageID = 2
-			self.printButton._tooltip = _("Toolpath to SD")
-		elif connectionGroup is not None:
+		# if len(removableStorage.getPossibleSDcardDrives()) > 0 and (connectionGroup is None or connectionGroup.getPriority() < 0):
+		# 	self.printButton._imageID = 2
+		# 	self.printButton._tooltip = _("Toolpath to SD")
+		if connectionGroup is not None:
 			self.printButton._imageID = connectionGroup.getIconID()
 			self.printButton._tooltip = _("Print with %s") % (connectionGroup.getName())
-		else:
-			self.printButton._imageID = 3
-			self.printButton._tooltip = _("Save toolpath")
+		# else:
+		# 	self.printButton._imageID = 3
+		# 	self.printButton._tooltip = _("Save toolpath")
 
 		if self._animView is not None:
 			self._viewTarget = self._animView.getPosition()

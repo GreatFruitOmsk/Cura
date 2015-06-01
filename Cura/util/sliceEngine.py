@@ -116,7 +116,8 @@ class EngineResult(object):
 		self._replaceInfo = {}
 
 	def addLog(self, line):
-		self._engineLog.append(line)
+		pass
+		# self._engineLog.append(line)
 
 	def setHash(self, hash):
 		self._modelHash = hash
